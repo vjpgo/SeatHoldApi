@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="SeatHold.Api/SeatHold.Api.csproj" />
+  <Project Path="SeatHold.Core/SeatHold.Core.csproj" />
+  <Project Path="SeatHold.Tests/SeatHold.Tests.csproj" />
+</Solution>

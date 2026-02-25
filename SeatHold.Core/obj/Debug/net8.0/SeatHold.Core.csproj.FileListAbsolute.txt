@@ -1,0 +1,11 @@
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\bin\Debug\net8.0\SeatHold.Core.deps.json
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\bin\Debug\net8.0\SeatHold.Core.dll
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\bin\Debug\net8.0\SeatHold.Core.pdb
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\obj\Debug\net8.0\SeatHold.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\obj\Debug\net8.0\SeatHold.Core.AssemblyInfoInputs.cache
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\obj\Debug\net8.0\SeatHold.Core.AssemblyInfo.cs
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\obj\Debug\net8.0\SeatHold.Core.csproj.CoreCompileInputs.cache
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\obj\Debug\net8.0\SeatHold.Core.dll
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\obj\Debug\net8.0\refint\SeatHold.Core.dll
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\obj\Debug\net8.0\SeatHold.Core.pdb
+C:\Dev\BRefSamples\SeatHoldApi\SeatHold.Core\obj\Debug\net8.0\ref\SeatHold.Core.dll
