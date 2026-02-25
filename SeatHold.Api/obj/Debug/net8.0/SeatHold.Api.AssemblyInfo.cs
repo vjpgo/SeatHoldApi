@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SeatHold.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+db6b87af5c9bf34db4b1aa20735c1a5ca02f8a34")]
 [assembly: System.Reflection.AssemblyProductAttribute("SeatHold.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SeatHold.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
