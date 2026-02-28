@@ -1,234 +1,237 @@
-Seat Hold API (.NET 8)
+# Seat Hold API (.NET 8)
 
-A small ASP.NET Core Web API that allows a user to place a temporary hold on a seat and retrieve it later.
+A small ASP.NET Core Web API that allows a user to place a temporary
+hold on a seat and retrieve it later.
 
 This project was implemented as a take-home exercise with emphasis on:
 
-correctness of business rules
+-   Correctness of business rules
+-   Clean, maintainable architecture
+-   Clear separation of responsibilities
+-   Testability and reliability
 
-clean, maintainable architecture
+The goal was to keep the system **simple but production-minded**,
+prioritizing clarity over unnecessary features.
 
-clear separation of responsibilities
+------------------------------------------------------------------------
 
-testability and reliability
-
-The goal was to keep the system simple but production-minded, prioritizing clarity over unnecessary features.
-
-Overview
+## Overview
 
 The API allows clients to:
 
-Create a temporary seat hold
+-   Create a temporary seat hold
+-   Retrieve a hold by its identifier
+-   (Optional) View holds for diagnostic purposes
 
-Retrieve a hold by its identifier
+A seat may only have **one active hold at a time**.
 
-View current system state via a diagnostic endpoint
+A hold is considered **active** if:
 
-A seat may only have one active hold at a time.
-A hold is considered active until its expiration time (UTC).
+    ExpiresAtUtc > currentUtcTime
 
-Architecture
+All expiration logic uses **UTC time**.
+
+------------------------------------------------------------------------
+
+## Architecture
 
 The application follows a lightweight layered design:
 
-API → Service → Repository → Domain Model
+    API → Service → Repository → Domain Model
 
-Design Principles
+### Design Principles
 
-Controllers act as thin HTTP adapters
+-   Controllers act as thin HTTP adapters
+-   Business rules live in the service layer
+-   Persistence is abstracted behind a repository interface
+-   Domain models contain no framework dependencies
+-   Time is injected via `ISystemClock` for deterministic testing
+-   Active/expired state is derived, not stored
 
-Business rules live in the service layer
+This structure keeps the system easy to reason about and straightforward
+to evolve.
 
-Persistence is abstracted behind a repository interface
+------------------------------------------------------------------------
 
-Domain models contain no framework dependencies
+## Technology Stack
 
-Time is injected via ISystemClock for deterministic testing
+-   .NET 8
+-   ASP.NET Core Web API (Controllers)
+-   MSTest
+-   In-memory repository (for simplicity and reproducibility)
+-   Swagger / OpenAPI
+-   Integration testing via `WebApplicationFactory`
+-   GitHub Actions CI
 
-Derived state (e.g., active/expired) is computed, not stored
+------------------------------------------------------------------------
 
-This structure keeps the system easy to reason about and straightforward to evolve.
+## Endpoints
 
-Technology Stack
+### Create Hold
 
-.NET 8
-
-ASP.NET Core Web API (Controllers)
-
-MSTest
-
-In-memory repository (for simplicity and reproducibility)
-
-Swagger / OpenAPI
-
-Integration testing via WebApplicationFactory
-
-Endpoints
-Create Hold
-
-POST /holds
+**POST** `/holds`
 
 Request body:
 
+``` json
 {
-"seatId": "A12",
-"heldBy": "Victor",
-"durationMinutes": 15
+  "seatId": "A12",
+  "heldBy": "Victor",
+  "durationMinutes": 15
 }
+```
 
 Rules:
 
-All fields are required
-
-durationMinutes must be greater than zero
-
-Only one active hold per seat is allowed
-
-Expiration is calculated using UTC time
+-   All fields are required
+-   `durationMinutes` must be greater than zero
+-   Only one active hold per seat is allowed
+-   Expiration is calculated using UTC time
 
 Responses:
 
-201 Created — hold created successfully
+-   **201 Created** --- hold created successfully
+-   **400 Bad Request** --- invalid input
+-   **409 Conflict** --- seat already actively held
 
-400 Bad Request — invalid input
+------------------------------------------------------------------------
 
-409 Conflict — seat already actively held
+### Get Hold
 
-Get Hold
-
-GET /holds/{id}
+**GET** `/holds/{id}`
 
 Responses:
 
-200 OK — hold found
+-   **200 OK** --- hold found
+-   **404 Not Found** --- hold does not exist
 
-404 Not Found — hold does not exist
+------------------------------------------------------------------------
 
-Diagnostic Endpoint (Non-Required)
+### Diagnostic Endpoint (Optional)
 
-GET /holds?status=active|expired
+**GET** `/holds?status=active|expired`
 
 Returns all holds, optionally filtered by status.
 
-This endpoint was intentionally added to simplify testing and verification of expiration behavior and is not required by the exercise specification.
+This endpoint was added to simplify verification of expiration behavior.
 
-Error Handling
+------------------------------------------------------------------------
 
-Errors are returned using standardized ProblemDetails responses (RFC 7807).
+## Error Handling
+
+Errors are returned using standardized **ProblemDetails** responses (RFC
+7807).
 
 Example:
 
+``` json
 {
-"status": 409,
-"title": "Seat already held",
-"detail": "Seat 'A12' already has an active hold."
+  "status": 409,
+  "title": "Seat already held",
+  "detail": "Seat 'A12' already has an active hold."
 }
+```
 
-Centralized middleware ensures consistent error responses across the API.
+Centralized middleware ensures consistent error responses across the
+API.
 
-Running the API
-Requirements
+------------------------------------------------------------------------
 
-.NET 8 SDK
+## Running the API
 
-Run locally
+### Requirements
 
+-   .NET 8 SDK
+
+### Run locally
+
+``` bash
 dotnet run --project SeatHold.Api
+```
 
 Open Swagger UI:
 
-https://localhost
-:<port>/swagger
+    https://localhost:<port>/swagger
 
 Swagger can be used to test all endpoints interactively.
 
-Running Tests
+------------------------------------------------------------------------
 
+## Running Tests
+
+``` bash
 dotnet test
+```
 
 Test coverage includes:
 
-Service layer unit tests (business rules)
+-   Service layer unit tests (business rules)
+-   End-to-end integration tests (HTTP behavior)
 
-End-to-end integration tests (HTTP behavior)
+------------------------------------------------------------------------
 
-Testing Approach
-Unit Tests
+## Continuous Integration
 
-Validate business logic independently from ASP.NET:
+A GitHub Actions workflow runs automatically on push and pull request:
 
-hold creation rules
+-   Restore dependencies
+-   Build (Release configuration)
+-   Run all unit and integration tests
 
-expiration logic
+This ensures the solution remains reproducible and validated.
 
-concurrency behavior
+------------------------------------------------------------------------
 
-validation failures
+## Project Structure
 
-A fake clock (FakeClock) is used to control time deterministically.
+    SeatHoldApi
+    │
+    ├── SeatHold.Api      → ASP.NET Core Web API
+    ├── SeatHold.Core     → Domain models + business logic
+    └── SeatHold.Tests    → Unit + integration tests
 
-Integration Tests
+------------------------------------------------------------------------
 
-Use WebApplicationFactory to run the API in memory and verify:
+## Design Notes
 
-HTTP status codes
-
-JSON responses
-
-middleware behavior
-
-routing and dependency injection
-
-Design Decisions
-UTC Time
+### UTC Time
 
 All expiration logic uses UTC to avoid timezone ambiguity.
 
-Derived State
+### Derived State
 
-Active/expired status is computed dynamically:
+Active/expired status is computed dynamically instead of stored.
 
-IsActive = ExpiresAtUtc > currentUtcTime
-
-This prevents data inconsistency.
-
-In-Memory Persistence
+### In-Memory Persistence
 
 An in-memory repository was chosen to:
 
-keep setup minimal
+-   Keep setup minimal
+-   Ensure reproducible execution
+-   Avoid external dependencies
 
-ensure reproducible execution
+The repository abstraction allows easy replacement with a relational
+database (e.g., SQLite or SQL Server).
 
-avoid external dependencies
+------------------------------------------------------------------------
 
-The repository abstraction allows easy replacement with a relational database (e.g., SQLite or SQL Server).
+## Future Enhancements
 
-Future Enhancements
+If extended into a production system:
 
-Potential extensions if this were a production system:
+-   SQLite or SQL Server persistence
+-   Distributed locking strategy
+-   Authentication/authorization
+-   Pagination for diagnostic endpoint
+-   Frontend client
 
-SQLite or SQL Server persistence
+------------------------------------------------------------------------
 
-distributed locking strategy
+## Author Notes
 
-authentication/authorization
+The implementation intentionally favors readability and correctness over
+feature completeness.
 
-pagination for diagnostic endpoint
-
-CI pipeline (GitHub Actions)
-
-simple frontend client
-
-Project Structure
-
-SeatHoldApi
-│
-├── SeatHold.Api (ASP.NET Core Web API)
-├── SeatHold.Core (domain + business logic)
-└── SeatHold.Tests (unit + integration tests)
-
-Author Notes
-
-The implementation intentionally favors readability and correctness over feature completeness.
-The solution is designed to demonstrate how a small service can be structured in a maintainable and testable way while remaining simple to understand.
+The solution demonstrates how a small service can be structured in a
+maintainable and testable way while remaining simple and easy to
+understand.

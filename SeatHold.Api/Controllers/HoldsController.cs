@@ -21,8 +21,6 @@ public sealed class HoldsController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> CreateHold([FromBody] CreateHoldRequest request, CancellationToken ct)
     {
-        // Model binding guarantees request != null for valid JSON,
-        // but we rely on service validation for required fields and duration.
         var created = await _service.CreateHoldAsync(request, ct).ConfigureAwait(false);
 
         return CreatedAtAction(

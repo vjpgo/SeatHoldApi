@@ -12,7 +12,7 @@ public sealed class HoldService : IHoldService
     private readonly IHoldRepository _repo;
     private readonly ISystemClock _clock;
 
-    // One lock per seatId to enforce atomic "check active then create"
+    // To enforce one lock per seatId
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> _seatLocks =
         new(StringComparer.OrdinalIgnoreCase);
 
@@ -29,7 +29,8 @@ public sealed class HoldService : IHoldService
         var seatKey = request.SeatId.Trim();
         var seatLock = _seatLocks.GetOrAdd(seatKey, _ => new SemaphoreSlim(1, 1));
 
-        await seatLock.WaitAsync(ct).ConfigureAwait(false);
+        await seatLock.WaitAsync(ct);
+
         try
         {
             var nowUtc = _clock.UtcNow;

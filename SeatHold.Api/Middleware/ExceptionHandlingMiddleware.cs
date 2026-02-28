@@ -31,7 +31,6 @@ public sealed class ExceptionHandlingMiddleware : IMiddleware
         }
         catch (Exception)
         {
-            // Avoid leaking details; keep generic.
             await WriteProblemDetailsAsync(
                 context,
                 statusCode: StatusCodes.Status500InternalServerError,
