@@ -1,0 +1,130 @@
+{
+  "info": {
+    "name": "SeatHoldApi",
+    "_postman_id": "c1f1a0c0-1111-2222-3333-444444444444",
+    "description": "Postman collection for SeatHold API take-home exercise.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create hold (201) - capture holdId",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set('seatId', 'A' + Math.floor(Math.random() * 100000));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201 Created', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "var json = pm.response.json();",
+              "pm.test('Response has id', function () {",
+              "  pm.expect(json).to.have.property('id');",
+              "  pm.expect(json.id).to.be.a('string');",
+              "});",
+              "",
+              "pm.environment.set('holdId', json.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/holds",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"seatId\": \"{{seatId}}\",\n  \"heldBy\": \"Postman\",\n  \"durationMinutes\": 10\n}"
+        }
+      }
+    },
+    {
+      "name": "Get hold by id (200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "var json = pm.response.json();",
+              "pm.test('Response id matches holdId', function () {",
+              "  pm.expect(json).to.have.property('id');",
+              "  pm.expect(json.id).to.eql(pm.environment.get('holdId'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/holds/{{holdId}}"
+      }
+    },
+    {
+      "name": "Create hold on same seat (409)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 409 Conflict', function () {",
+              "  pm.response.to.have.status(409);",
+              "});",
+              "",
+              "var json = pm.response.json();",
+              "pm.test('ProblemDetails shape', function () {",
+              "  pm.expect(json).to.have.property('status');",
+              "  pm.expect(json.status).to.eql(409);",
+              "  pm.expect(json).to.have.property('title');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/holds",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"seatId\": \"{{seatId}}\",\n  \"heldBy\": \"Postman-2\",\n  \"durationMinutes\": 5\n}"
+        }
+      }
+    },
+    {
+      "name": "Get unknown hold (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 404 Not Found', function () {",
+              "  pm.response.to.have.status(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/holds/00000000-0000-0000-0000-000000000001"
+      }
+    }
+  ]
+}
