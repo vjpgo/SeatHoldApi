@@ -17,3 +17,6 @@ TestResults/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Postman runtime exports
+postman/*.exported.postman_environment.json
