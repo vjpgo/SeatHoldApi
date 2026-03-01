@@ -112,6 +112,89 @@ public sealed class HoldsApiTests
         Assert.AreEqual(HttpStatusCode.NotFound, get.StatusCode);
     }
 
+    [TestMethod]
+    public async Task HoldPersistsAcrossAppRestart_ReturnsOkAfterRestart()
+    {
+        // Use a dedicated DB path for this test so we can restart the host against the same file.
+        var dbPath = Path.Combine(Path.GetTempPath(), $"seathold-restart-{Guid.NewGuid():N}.db");
+
+        WebApplicationFactory<Program>? factory1 = null;
+        WebApplicationFactory<Program>? factory2 = null;
+        HttpClient? client1 = null;
+        HttpClient? client2 = null;
+
+        try
+        {
+            factory1 = CreateFactory(dbPath);
+            client1 = factory1.CreateClient();
+
+            var create = new CreateHoldRequest
+            {
+                SeatId = "R1",
+                HeldBy = "RestartTest",
+                DurationMinutes = 10
+            };
+
+            var post = await client1.PostAsJsonAsync("/holds", create);
+            Assert.AreEqual(HttpStatusCode.Created, post.StatusCode);
+
+            var created = await post.Content.ReadFromJsonAsync<HoldResponse>();
+            Assert.IsNotNull(created);
+            Assert.AreNotEqual(Guid.Empty, created!.Id);
+
+            // Dispose the first host to simulate an application restart
+            client1.Dispose();
+            factory1.Dispose();
+            client1 = null;
+            factory1 = null;
+
+            // Important for SQLite file locks on Windows
+            SqliteConnection.ClearAllPools();
+
+            // New host instance pointing at the same DB file
+            factory2 = CreateFactory(dbPath);
+            client2 = factory2.CreateClient();
+
+            var get = await client2.GetAsync($"/holds/{created.Id}");
+            Assert.AreEqual(HttpStatusCode.OK, get.StatusCode);
+
+            var fetched = await get.Content.ReadFromJsonAsync<HoldResponse>();
+            Assert.IsNotNull(fetched);
+            Assert.AreEqual(created.Id, fetched!.Id);
+        }
+        finally
+        {
+            client1?.Dispose();
+            factory1?.Dispose();
+            client2?.Dispose();
+            factory2?.Dispose();
+
+            SqliteConnection.ClearAllPools();
+
+            TryDelete(dbPath);
+            TryDelete($"{dbPath}-wal");
+            TryDelete($"{dbPath}-shm");
+        }
+    }
+
+    private static WebApplicationFactory<Program> CreateFactory(string dbPath)
+    {
+        return new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureAppConfiguration(
+                    (_, config) =>
+                    {
+                        config.AddInMemoryCollection(
+                            new Dictionary<string, string?>
+                            {
+                                ["ConnectionStrings:SeatHoldDb"] = $"Data Source={dbPath}"
+                            });
+                    });
+            });
+    }
+
+
     private static void TryDelete(string path)
     {
         if (!File.Exists(path))
