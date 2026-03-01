@@ -53,17 +53,20 @@ jobs:
 
       - name: Start API (background)
         run: |
-          nohup dotnet run --project SeatHold.Api --urls http://127.0.0.1:5080 > api.log 2>&1 &
+          nohup dotnet run --no-launch-profile --project SeatHold.Api --urls http://127.0.0.1:5080 > api.log 2>&1 &
           echo $! > api.pid
 
       - name: Wait for API
         run: |
-          for i in {1..40}; do
-            if curl -fsS http://127.0.0.1:5080/swagger/index.html > /dev/null; then
+          echo "Waiting for API on http://127.0.0.1:5080 ..."
+          for i in {1..60}; do
+            if curl -fsS --retry 0 http://127.0.0.1:5080/swagger/index.html > /dev/null; then
               echo "API is ready"
               exit 0
             fi
-            sleep 0.25
+            echo "Not ready yet ($i)..."
+            ss -ltnp | head -n 50 || true
+            sleep 0.5
           done
           echo "API did not become ready"
           echo "---- api.log ----"
