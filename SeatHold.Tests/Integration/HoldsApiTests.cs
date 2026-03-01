@@ -2,8 +2,11 @@ namespace SeatHold.Tests.Integration;
 
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SeatHold.Core.Contracts;
 
@@ -12,19 +15,40 @@ public sealed class HoldsApiTests
 {
     private WebApplicationFactory<Program> _factory = default!;
     private HttpClient _client = default!;
+    private string _dbPath = string.Empty;
 
     [TestInitialize]
     public void Init()
     {
-        _factory = new WebApplicationFactory<Program>();
+        _dbPath = Path.Combine(Path.GetTempPath(), $"seathold-tests-{Guid.NewGuid():N}.db");
+
+        _factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureAppConfiguration(
+                    (_, config) =>
+                    {
+                        config.AddInMemoryCollection(
+                            new Dictionary<string, string?>
+                            {
+                                ["ConnectionStrings:SeatHoldDb"] = $"Data Source={_dbPath}"
+                            });
+                    });
+            });
+
         _client = _factory.CreateClient();
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        _client.Dispose();
-        _factory.Dispose();
+        _client?.Dispose();
+        _factory?.Dispose();
+        SqliteConnection.ClearAllPools();
+
+        TryDelete(_dbPath);
+        TryDelete($"{_dbPath}-wal");
+        TryDelete($"{_dbPath}-shm");
     }
 
     [TestMethod]
@@ -86,5 +110,21 @@ public sealed class HoldsApiTests
     {
         var get = await _client.GetAsync($"/holds/{Guid.NewGuid()}");
         Assert.AreEqual(HttpStatusCode.NotFound, get.StatusCode);
+    }
+
+    private static void TryDelete(string path)
+    {
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
+        try
+        {
+            File.Delete(path);
+        }
+        catch (IOException)
+        {
+        }
     }
 }

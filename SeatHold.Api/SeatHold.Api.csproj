@@ -9,10 +9,15 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.24" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.24">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SeatHold.Core\SeatHold.Core.csproj" />
+    <ProjectReference Include="..\SeatHold.Persistence\SeatHold.Persistence.csproj" />
   </ItemGroup>
 
 </Project>
