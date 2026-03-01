@@ -20,3 +20,15 @@ Thumbs.db
 
 # Postman runtime exports
 postman/*.exported.postman_environment.json
+
+# --- Local tooling ---
+.dotnet/
+.nuget/
+
+# --- EF / SQLite local database ---
+*.db
+*.db-shm
+*.db-wal
+
+# --- EF tool manifest cache ---
+dotnet-tools.json
