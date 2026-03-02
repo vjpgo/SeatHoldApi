@@ -9,15 +9,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddSeatHold();
+builder.Services.AddSeatHold(builder.Configuration);
 
 var app = builder.Build();
 
-var connectionString = app.Configuration.GetConnectionString("SeatHoldDb")
-    ?? "Data Source=seathold.db";
+var provider = builder.Configuration["Persistence:Provider"] ?? "Sqlite";
+if (!provider.Equals("InMemory", StringComparison.OrdinalIgnoreCase))
+{
+    var connectionString = builder.Configuration.GetConnectionString("SeatHoldDb")
+        ?? "Data Source=seathold.db";
 
-DatabaseInitializer.Migrate(app.Services, connectionString);
+    DatabaseInitializer.Migrate(app.Services, connectionString);
+}
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -30,7 +33,6 @@ app.MapControllers();
 
 app.Run();
 
-// Needed for WebApplicationFactory integration tests
 public partial class Program { }
 
 internal static class DatabaseInitializer

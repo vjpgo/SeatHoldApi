@@ -158,6 +158,16 @@ dotnet tool run dotnet-ef database update \
   --startup-project SeatHold.Api
 ```
 
+## Persistence Configuration
+
+V3 defaults to SQLite persistence using EF Core and migrations.
+
+The persistence provider can be switched via configuration:
+
+```json
+"Persistence": {
+  "Provider": "Sqlite" // or "InMemory"
+}
 ---
 
 ## Testing
@@ -213,9 +223,9 @@ API errors return RFC7807 ProblemDetails responses:
 
 ---
 
-## How to Discuss in Interview
+## Evolution of the Solution
 
-This project intentionally demonstrates evolution:
+Project versions demonstrates evolution:
 
 1. **V1:** correctness and clarity
 2. **V2:** contract testing maturity

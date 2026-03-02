@@ -36,7 +36,6 @@ public sealed class SqliteHoldRepository : IHoldRepository
             throw new SeatAlreadyHeldException(seatKey);
         }
 
-        // Normalize SeatId at persistence boundary (Hold.SeatId is init-only)
         var entity = MapToEntity(hold);
         entity.SeatId = seatKey;
 
