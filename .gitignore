@@ -14,6 +14,9 @@ obj/
 # Test results
 TestResults/
 
+# standards
+agents.md
+
 # OS files
 .DS_Store
 Thumbs.db
