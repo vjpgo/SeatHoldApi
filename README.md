@@ -6,6 +6,14 @@ This implementation prioritizes correctness, clarity, and clean structure over a
 
 ---
 
+## Submission Notes
+
+The `main` branch represents the requested take-home implementation.
+
+Additional exploratory enhancements are available in separate branches and are not required for evaluation.
+
+---
+
 ## Goal
 
 Build a small API that:
